@@ -52,7 +52,16 @@ class Yolov1(nn.Modelu):
                 in_channels = x[1]
             elif type(x) == str:
                 layers += [nn.MaxPool2d(kernel_size = (2, 2), stride = (2, 2))]
-                
+            else:
+                clayer1 = x[0]
+                clayer2 = x[1]
+                num_rep = x[2]
+                for _ in range(num_rep):                   
+
+                    layers += [self.CNNBlock(in_channels, clayer1[1], kernel_size = clayer1[0], stride = clayer1[1], padding = clayer1[2]]
+                    layers += [self.CNNBlock(clayer1[1], clayer2[1], kernel_size = clayer2[0], stride = clayer2[2], padding = clayer2[3]]
+                    in_channels = clayer2[2]
+
     
 
 # cnn = CNNBlock(1, 1)
