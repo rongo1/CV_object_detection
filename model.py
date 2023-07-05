@@ -33,8 +33,8 @@ class CNNBlock(nn.Module):
     def forward(self,x):
         return self.leakyrelu(self.batchnorm(self.conv(x)))
     
-class Yolov1(nn.Modelu):
-    def __init__(self, in_channels = 3, **kwards):
+class Yolov1(nn.Module):
+    def __init__(self, in_channels = 3, **kwargs):
         super(Yolov1, self).__init__()
         self.architecture = architecture_config
         self.darknet = self._create_conv_layers(self.architecture)
@@ -56,12 +56,26 @@ class Yolov1(nn.Modelu):
                 clayer1 = x[0]
                 clayer2 = x[1]
                 num_rep = x[2]
-                for _ in range(num_rep):                   
-
-                    layers += [self.CNNBlock(in_channels, clayer1[1], kernel_size = clayer1[0], stride = clayer1[1], padding = clayer1[2]]
-                    layers += [self.CNNBlock(clayer1[1], clayer2[1], kernel_size = clayer2[0], stride = clayer2[2], padding = clayer2[3]]
+                for _ in range(num_rep):              
+                    layers += [self.CNNBlock(in_channels, clayer1[1], kernel_size = clayer1[0], stride = clayer1[1], padding = clayer1[2])]
+                    layers += [self.CNNBlock(clayer1[1], clayer2[1], kernel_size = clayer2[0], stride = clayer2[2], padding = clayer2[3])]
                     in_channels = clayer2[2]
+        return nn.Sequential(*layers)
+    def _create_fcs(self, split_size, num_boxes, num_classes):
+        return nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(1024*split_size*split_size, 496),
+            nn.Dropout(0.0),
+            nn.LeakyRelu(0.1),
+            nn.Linear(496, split_size*split_size* (num_classes  + num_boxes*5))
 
+        )
+
+def test(split_size = 7, num_boxes = 2, num_classes = 20):
+    model = Yolov1(split_size, num_boxes, num_classes)
+    x = torch.rand((2, 488, 488, 3))
+    print(model(x).shape)   
+test()
     
 
 # cnn = CNNBlock(1, 1)
