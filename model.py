@@ -84,4 +84,8 @@ test()
 
 # a = cnn(torch.randn(2, 1, 1, 3))
 # print(a)
-    
+
+
+model = Yolov1(split_size = 7, num_boxes = 2, num_classes = 20)
+x = torch.randn((2, 3, 448, 448))
+print(model(x))    
